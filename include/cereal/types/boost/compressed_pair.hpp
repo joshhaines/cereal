@@ -1,8 +1,8 @@
-/*! \file util.hpp
-    \brief Internal misc utilities
-    \ingroup Internal */
+/*! \file boost_compressed_pair.hpp
+    \brief Support for types found in \<boost\compressed_pair.hpp\>
+    \ingroup OtherTypes */
 /*
-  Copyright (c) 2014, Randolph Voorhies, Shane Grant
+  Copyright (c) 2014, Steve HIckman
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -27,58 +27,36 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef CEREAL_DETAILS_UTIL_HPP_
-#define CEREAL_DETAILS_UTIL_HPP_
+#ifndef CEREAL_TYPES_BOOST_COMPRESSED_PAIR_HPP_
+#define CEREAL_TYPES_BOOST_COMPRESSED_PAIR_HPP_
 
-#include <typeinfo>
-#include <string>
+#include <cereal/cereal.hpp>
+#include <boost/compressed_pair.hpp>
 
-#if defined(_MSC_VER) || defined(ANDROID)
 namespace cereal
 {
-  namespace util
+  //! Saving for boost::compressed_pair
+  template <class Archive, class T1, class T2> inline
+  void save( Archive & ar, ::boost::compressed_pair<T1, T2> const & pair )
   {
-    //! Demangles the type encoded in a string
-    /*! @internal */
-    inline std::string demangle( std::string const & name )
-    { return name; }
-
-    //! Gets the demangled name of a type
-    /*! @internal */
-    template <class T> inline
-    std::string demangledName()
-    { return typeid( T ).name(); }
-  } // namespace util
-} // namespace cereal
-#else // clang or gcc
-#include <cxxabi.h>
-#include <cstdlib>
-namespace cereal
-{
-  namespace util
-  {
-    //! Demangles the type encoded in a string
-    /*! @internal */
-    inline std::string demangle(std::string mangledName)
-    {
-      int status = 0;
-      char *demangledName = nullptr;
-      std::size_t len;
-
-      demangledName = abi::__cxa_demangle(mangledName.c_str(), 0, &len, &status);
-
-      std::string retName(demangledName);
-      free(demangledName);
-
-      return retName;
-    }
-
-    //! Gets the demangled name of a type
-    /*! @internal */
-    template<class T> inline
-    std::string demangledName()
-    { return demangle(typeid(T).name()); }
+    ar( _CEREAL_NVP("first",  pair.first()),
+        _CEREAL_NVP("second", pair.second()) );
   }
+  
+
+   //! Loading for boost::optional
+  template <class Archive, class T1, class T2> inline
+  void load( Archive & ar, ::boost::compressed_pair<T1, T2> & pair )
+   {
+
+	T1 first;
+	T2 second;
+
+    ar(_CEREAL_NVP("first", first));
+    ar(_CEREAL_NVP("second", second));
+ 
+	pair = ::boost::compressed_pair<T1,T2>(first,second);
+   }
 } // namespace cereal
-#endif // clang or gcc branch of _MSC_VER
-#endif // CEREAL_DETAILS_UTIL_HPP_
+
+#endif // CEREAL_TYPES_BOOST_COMPRESSED_PAIR_HPP_
